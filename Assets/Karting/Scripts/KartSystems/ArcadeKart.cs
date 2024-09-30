@@ -1,6 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.Assertions;
 using UnityEngine.VFX;
 
 namespace KartGame.KartSystems
@@ -155,7 +156,19 @@ namespace KartGame.KartSystems
         public LayerMask GroundLayers = Physics.DefaultRaycastLayers;
 
         // the input sources that can control the kart
-        IInput[] m_Inputs;
+        readonly List<IInput> m_Inputs = new List<IInput>();
+
+        public void AddInputSource(IInput input)
+        {
+            Assert.IsNotNull(input, "expected valid input");
+            m_Inputs.Add(input);
+        }
+
+        /// fails silently if input is not found
+        public void RemoveInputSource(IInput input)
+        {
+            m_Inputs.Remove(input);
+        }
 
         const float k_NullInput = 0.01f;
         const float k_NullSpeed = 0.01f;
@@ -234,7 +247,7 @@ namespace KartGame.KartSystems
         void Awake()
         {
             Rigidbody = GetComponent<Rigidbody>();
-            m_Inputs = GetComponents<IInput>();
+            m_Inputs.AddRange(GetComponents<IInput>());
 
             UpdateSuspensionParams(FrontLeftWheel);
             UpdateSuspensionParams(FrontRightWheel);
@@ -328,7 +341,7 @@ namespace KartGame.KartSystems
             WantsToDrift = false;
 
             // gather nonzero input from our sources
-            for (int i = 0; i < m_Inputs.Length; i++)
+            for (int i = 0; i < m_Inputs.Count; i++)
             {
                 Input = m_Inputs[i].GenerateInput();
                 WantsToDrift = Input.Brake && Vector3.Dot(Rigidbody.velocity, transform.forward) > 0.0f;

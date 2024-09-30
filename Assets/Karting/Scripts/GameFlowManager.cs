@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Playables;
 using KartGame.KartSystems;
+using UnityEngine.Assertions;
 using UnityEngine.SceneManagement;
 
 public enum GameState{Play, Won, Lost}
@@ -153,13 +154,18 @@ public class GameFlowManager : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
+        Assert.IsNotNull(m_TimeManager, "expected valid timemanager");
         m_TimeManager.StopRace();
 
         // Remember that we need to load the appropriate end scene after a delay
+        Assert.AreEqual(GameState.Play, gameState, "expected to end game while already playing");
+        Assert.IsTrue(gameState == GameState.Play, "expected to be play, but was " + gameState);
         gameState = win ? GameState.Won : GameState.Lost;
+        Assert.IsNotNull(endGameFadeCanvasGroup, "expected valid canvas group");
         endGameFadeCanvasGroup.gameObject.SetActive(true);
         if (win)
         {
+            Assert.IsFalse(string.IsNullOrEmpty(winSceneName), "expected valid win scene");
             m_SceneToLoad = winSceneName;
             m_TimeLoadEndGameScene = Time.time + endSceneLoadDelay + delayBeforeFadeToBlack;
 
@@ -172,6 +178,7 @@ public class GameFlowManager : MonoBehaviour
 
             // create a game message
             winDisplayMessage.delayBeforeShowing = delayBeforeWinMessage;
+            Assert.IsFalse(winDisplayMessage.gameObject.activeSelf, "expected no existing message");
             winDisplayMessage.gameObject.SetActive(true);
         }
         else
