@@ -37,11 +37,11 @@ namespace KartGame.EditModeTests
     /// validating every level scene
     /// </summary>
     [TestFixtureSource(typeof(TrackSceneSource))]
-    public class SceneValidationTestsFixture
+    public class TrackSceneValidationTestsFixture
     {
         private readonly string m_scenePath;
 
-        public SceneValidationTestsFixture(PrettyScenePath scene)
+        public TrackSceneValidationTestsFixture(PrettyScenePath scene)
         {
             m_scenePath = scene.ScenePath;
         }
