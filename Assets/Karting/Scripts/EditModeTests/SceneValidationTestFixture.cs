@@ -9,6 +9,7 @@ using UnityEngine;
 
 namespace KartGame.EditModeTests
 {
+    /// all scenes listed in the build settings
     public class BuildSettingsSceneSource : IEnumerable<BuildSettingsSceneSource.ScenePath>
     {
         public class ScenePath
@@ -17,7 +18,7 @@ namespace KartGame.EditModeTests
             public override string ToString() => System.IO.Path.GetFileNameWithoutExtension(Path);
         }
         
-        public IEnumerator<BuildSettingsSceneSource.ScenePath> GetEnumerator() 
+        public IEnumerator<ScenePath> GetEnumerator() 
             => EditorBuildSettings.scenes.Select(scene => new ScenePath{Path=scene.path}).GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -26,6 +27,7 @@ namespace KartGame.EditModeTests
         }
     }
     
+    /// a collection of generic tests that should work on any scene
     [TestFixtureSource(typeof(BuildSettingsSceneSource))]
     public class SceneValidationTestFixture
     {
@@ -55,6 +57,40 @@ namespace KartGame.EditModeTests
         public void LoadedScene_NoWarningsOrErrors()
         {
             m_logs.AssertIsClean();
+        }
+
+        [Test]
+        public void AllMonoBehaviours_NoMissingReferences()
+        {
+            var missingReferences = new List<string>();
+            
+            var allGameObjects = Object.FindObjectsOfType<GameObject>();
+            foreach (var go in allGameObjects)
+            {
+                foreach (var component in go.GetComponents<Component>())
+                {
+                    if (component == null)
+                    {
+                        // missing monobehaviour??
+                        continue;
+                    }
+                    var serialization = new SerializedObject(component);
+                    var propertyIt = serialization.GetIterator();
+                    bool firstVisit = true;
+                    while (propertyIt.NextVisible(firstVisit))
+                    {
+                        if (propertyIt.propertyType is SerializedPropertyType.ObjectReference
+                            && propertyIt.objectReferenceInstanceIDValue != 0
+                            && propertyIt.objectReferenceValue == null)
+                        {
+                            missingReferences.Add($"property {propertyIt.name} on a {component.GetType().Name} component in GameObject {go.name} has missing reference");
+                        }
+                        firstVisit = false;
+                    }
+                }
+            }
+            
+            Assert.That(missingReferences, Is.Empty);
         }
 
         [Test]
