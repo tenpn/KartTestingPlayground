@@ -2,11 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+using TenPN.UnitTestUtils;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.TestTools;
 
 namespace KartGame.EditModeTests
 {
@@ -30,7 +29,8 @@ namespace KartGame.EditModeTests
     [TestFixtureSource(typeof(BuildSettingsSceneSource))]
     public class SceneValidationTestFixture
     {
-        private string m_scenePath;
+        private readonly string m_scenePath;
+        private readonly LogWatcher m_logs = new LogWatcher();
         
         public SceneValidationTestFixture(BuildSettingsSceneSource.ScenePath scene)
         {
@@ -38,9 +38,23 @@ namespace KartGame.EditModeTests
         }
 
         [OneTimeSetUp]
-        public void SceneValidationTestsOneTimeSetup()
+        public void SceneValidationTestsOneTimeSetUp()
         {
+            m_logs.Register();
             EditorSceneManager.OpenScene(m_scenePath);
+        }
+
+        [OneTimeTearDown]
+        public void SceneValidationTestsOneTimeTearDown()
+        {
+            m_logs.Unregister();
+        }
+
+        // first, so we get the loading logs and nothing else 
+        [Test, Order(1)]
+        public void LoadedScene_NoWarningsOrErrors()
+        {
+            m_logs.AssertIsClean();
         }
 
         [Test]

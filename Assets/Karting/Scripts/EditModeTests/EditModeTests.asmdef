@@ -4,7 +4,8 @@
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "KartGame"
+        "KartGame",
+        "UnityTestUtils"
     ],
     "includePlatforms": [
         "Editor"
