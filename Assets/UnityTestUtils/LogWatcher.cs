@@ -24,6 +24,11 @@ namespace TenPN.UnitTestUtils
             Assert.That(m_unexpectedLogs, Is.Empty);
         }
 
+        public void Clear()
+        {
+            m_unexpectedLogs.Clear();
+        }
+
         /*--------------------------------------------------*/
 
         private readonly List<string> m_unexpectedLogs = new List<string>();
