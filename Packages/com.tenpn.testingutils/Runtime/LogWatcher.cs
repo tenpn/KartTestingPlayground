@@ -1,8 +1,17 @@
+/**
+ * Copyright (C) Andrew Fray - All Rights Reserved
+ * 
+ * This source code is protected under international copyright law.  All rights
+ * reserved and protected by the copyright holders.
+ * This file is confidential and only available to authorized individuals with the
+ * permission of the copyright holders.  If you encounter this file and do not have
+ * permission, please contact the copyright holders and delete this file.
+ */
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 
-namespace TenPN.UnitTestUtils
+namespace TenPN.TestingUtils
 {
     /// UnityTestFramework tests fail if there's any errors or execptions, but not warnings. Since warnings are errors, we treat them the same here.
     public class LogWatcher
