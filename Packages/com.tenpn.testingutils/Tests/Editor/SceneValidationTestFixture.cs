@@ -71,8 +71,8 @@ namespace TenPN.TestingUtils
         public void AllMonoBehaviours_NoMissingReferences()
         {
             var missingReferences = new List<string>();
-            
-            var allGameObjects = Object.FindObjectsOfType<GameObject>();
+
+            var allGameObjects = FindAllUnordered<GameObject>();
             foreach (var go in allGameObjects)
             {
                 foreach (var component in go.GetComponents<Component>())
@@ -91,7 +91,7 @@ namespace TenPN.TestingUtils
                             && propertyIt.objectReferenceInstanceIDValue != 0
                             && propertyIt.objectReferenceValue == null)
                         {
-                            missingReferences.Add($"property {propertyIt.name} on a {component.GetType().Name} component in GameObject {go.name} has missing reference");
+                            missingReferences.Add($"{component.GetHierarchyPath()}/{propertyIt.name}");
                         }
                         firstVisit = false;
                     }
@@ -106,18 +106,44 @@ namespace TenPN.TestingUtils
         {
             var objectsWithMissingMonoBehaviours = new List<string>();
             
-            var allGameObjects = Object.FindObjectsOfType<GameObject>();
+            var allGameObjects = FindAllUnordered<GameObject>();
             foreach (var go in allGameObjects)
             {
                 int missingCount = GameObjectUtility.GetMonoBehavioursWithMissingScriptCount(go);
                 if (missingCount > 0)
                 {
-                    objectsWithMissingMonoBehaviours.Add(go.name);
+                    objectsWithMissingMonoBehaviours.Add(go.GetHierarchyPath());
                 }
             }
             
             Assert.That(objectsWithMissingMonoBehaviours, Is.Empty);
         }
+
+        [Test]
+        public void AllBoxColliders_PositiveScale()
+        {
+            var collidersWithNegativeScale = new List<string>();
+
+            var allBoxColliders = FindAllUnordered<BoxCollider>();
+            foreach (var box in allBoxColliders)
+            {
+                var boxScale = box.transform.lossyScale;
+                if (boxScale.x < 0 || boxScale.y < 0 || boxScale.z < 0)
+                {
+                    collidersWithNegativeScale.Add(box.gameObject.GetHierarchyPath());
+                }
+            }
+            
+            Assert.That(collidersWithNegativeScale, Is.Empty);
+        }
+
+        /// <returns>includes inactive</returns>
+        private static T[] FindAllUnordered<T>() where T : UnityEngine.Object
+#if UNITY_2022_2_5_OR_NEWER
+            => Object.FindObjectsByType<T>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#else
+            => Object.FindObjectsOfType<T>(includeInactive: true);
+#endif
     }
 
 }
